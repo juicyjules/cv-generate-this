@@ -9,34 +9,36 @@
     # Define the system architecture (e.g., x86_64-linux)
     system = "x86_64-linux";
     pkgs = import nixpkgs { inherit system; };
-    backend_node = import ./backend/node-packages.nix { inherit pkgs; };
+    nodejs = pkgs.nodejs;
+    #backend_node = import ./backend/default.nix { inherit pkgs system nodejs; };
+    frontend_node = import ./frontend/default.nix { inherit pkgs system nodejs; };
   in{
     # Define packages for backend and frontend
     packages.${system} = {
       # Backend package
-      backend = pkgs.stdenv.mkDerivation rec {
-        pname = "cv-generator-backend";
-        version = "1.0.0";
+      # backend = pkgs.stdenv.mkDerivation rec {
+      #   pname = "cv-generator-backend";
+      #   version = "1.0.0";
 
-        # Source directory for the backend
-        src = ./backend;
+      #   # Source directory for the backend
+      #   src = ./backend;
 
-        # Use node2nix to manage dependencies
-        buildInputs = [ pkgs.nodejs pkgs.nodePackages.node2nix backend_node ];
+      #   # Use node2nix to manage dependencies
+      #   buildInputs = [ pkgs.nodejs pkgs.nodePackages.node2nix backend_node.nodeDependencies ];
 
-        # Install dependencies via node2nix
-        preBuild = ''
-          node2nix --input package.json --lock package-lock.json --output node-packages.nix
-        '';
+      #   # Install dependencies via node2nix
+      #   preBuild = ''
+      #   '';
 
-        buildPhase = ''
-        '';
+      #   buildPhase = ''
+      #     npm run build
+      #   '';
 
-        installPhase = ''
-          mkdir -p $out
-          cp -r * $out
-        '';
-      };
+      #   installPhase = ''
+      #     mkdir -p $out
+      #     cp -r * $out
+      #   '';
+      # };
 
       # Frontend package
       frontend = pkgs.stdenv.mkDerivation rec {
@@ -47,14 +49,12 @@
         src = ./frontend;
 
         # Use node2nix to manage dependencies
-        buildInputs = [ pkgs.nodejs pkgs.nodePackages.node2nix ];
+        buildInputs = [ pkgs.nodejs pkgs.nodePackages.node2nix frontend_node.nodeDependencies];
 
         preBuild = ''
-          node2nix --input package.json --lock package-lock.json --output node-packages.nix
         '';
 
         buildPhase = ''
-          npm install --production
           npm run build
         '';
 
@@ -70,6 +70,7 @@
       buildInputs = [
         pkgs.nodejs             # Add Node.js globally in shell
         pkgs.nodePackages.node2nix # Add node2nix for dependency management
+        pkgs.nest-cli
       ];
     };
   };

@@ -9,6 +9,7 @@
     # Define the system architecture (e.g., x86_64-linux)
     system = "x86_64-linux";
     pkgs = import nixpkgs { inherit system; };
+    backend_node = import ./backend/node-packages.nix { inherit pkgs; };
   in{
     # Define packages for backend and frontend
     packages.${system} = {
@@ -21,7 +22,7 @@
         src = ./backend;
 
         # Use node2nix to manage dependencies
-        buildInputs = [ pkgs.nodejs pkgs.nodePackages.node2nix ];
+        buildInputs = [ pkgs.nodejs pkgs.nodePackages.node2nix backend_node ];
 
         # Install dependencies via node2nix
         preBuild = ''
@@ -29,7 +30,6 @@
         '';
 
         buildPhase = ''
-          npm install --production
         '';
 
         installPhase = ''

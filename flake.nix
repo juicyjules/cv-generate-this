@@ -2,34 +2,74 @@
   description = "CV Generator with Node.js setup using Nix Flakes";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs"; # Use the latest NixOS package set
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs }: {
-    packages = {
+  outputs = { self, nixpkgs }: let
+    # Define the system architecture (e.g., x86_64-linux)
+    system = "x86_64-linux";
+    pkgs = import nixpkgs { inherit system; };
+  in{
+    # Define packages for backend and frontend
+    packages.${system} = {
       # Backend package
-      backend = nixpkgs.mkNodePackage {
-        name = "cv-generator-backend";
+      backend = pkgs.stdenv.mkDerivation rec {
+        pname = "cv-generator-backend";
+        version = "1.0.0";
+
+        # Source directory for the backend
         src = ./backend;
-        # Specify Node.js version and dependencies
-        nodejs = nixpkgs.nodejs; # Use Node.js LTS version (adjust as needed)
+
+        # Use node2nix to manage dependencies
+        buildInputs = [ pkgs.nodejs pkgs.nodePackages.node2nix ];
+
+        # Install dependencies via node2nix
+        preBuild = ''
+          node2nix --input package.json --lock package-lock.json --output node-packages.nix
+        '';
+
+        buildPhase = ''
+          npm install --production
+        '';
+
+        installPhase = ''
+          mkdir -p $out
+          cp -r * $out
+        '';
       };
 
       # Frontend package
-      frontend = nixpkgs.mkNodePackage {
-        name = "cv-generator-frontend";
+      frontend = pkgs.stdenv.mkDerivation rec {
+        pname = "cv-generator-frontend";
+        version = "1.0.0";
+
+        # Source directory for the frontend
         src = ./frontend;
-        # Specify Node.js version and dependencies
-        nodejs = nixpkgs.nodejs;
+
+        # Use node2nix to manage dependencies
+        buildInputs = [ pkgs.nodejs pkgs.nodePackages.node2nix ];
+
+        preBuild = ''
+          node2nix --input package.json --lock package-lock.json --output node-packages.nix
+        '';
+
+        buildPhase = ''
+          npm install --production
+          npm run build
+        '';
+
+        installPhase = ''
+          mkdir -p $out
+          cp -r build/* $out/
+        '';
       };
     };
 
-    # Development shell for both backend and frontend
-    devShells.default = nixpkgs.mkShell {
+    # Development shell combining backend and frontend environments
+    devShells.${system}.default = pkgs.mkShell {
       buildInputs = [
-        self.packages.backend
-        self.packages.frontend
-        nixpkgs.nodejs # Add Node.js globally for shell use
+        pkgs.nodejs             # Add Node.js globally in shell
+        pkgs.nodePackages.node2nix # Add node2nix for dependency management
       ];
     };
   };

@@ -1,0 +1,54 @@
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor-specific files
+.vscode/
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+
+# Coverage reports (if using testing frameworks)
+coverage/
+
+# Cache directories
+.cache/
+.vite/
+.next/
+
+
+# TypeScript declaration files (if generated separately)
+*.d.ts
+
+# Database files (if using SQLite or similar for development)
+*.sqlite*
+
+
+# React build artifacts
+build/
+
+# Local React environment variables
+.env.development.local
+
+# Static asset handling (if using Vite or similar)
+.vite/

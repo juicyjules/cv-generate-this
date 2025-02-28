@@ -70,7 +70,8 @@
       buildInputs = [
         pkgs.nodejs             # Add Node.js globally in shell
         pkgs.nodePackages.node2nix # Add node2nix for dependency management
-        pkgs.nest-cli
+        #pkgs.nest-cli
+        pkgs.sqlite
       ];
     };
   };
